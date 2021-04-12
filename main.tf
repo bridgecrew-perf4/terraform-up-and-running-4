@@ -2,28 +2,22 @@ provider "aws" {
   region = "us-west-1"
 }
 
-resource "aws_instance" "example" {
-  ami                    = "ami-0577b787189839998"
-  instance_type          = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.instance.id]
-  user_data              = <<-EOF
-              yum install httpd -y
-              echo "Hello, World!" >> /var/www/html/index.html"
-              systemctl enable httpd
-              systemctl start httpd
-              EOF
-
+resource "aws_s3_bucket" "dz-tf-my-bucket" {
+  bucket = "dz-tf-my-bucket"
+  acl    = "private"
   tags = {
-    Name = "terraform-instance-example"
+    Name        = "dz-tf-my-bucket"
+    Environment = "dev"
   }
+
 }
 
-resource "aws_security_group" "instance" {
-  name = "terraform-example-instance"
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+resource "aws_s3_bucket_object" "object1" {
+  for_each = fileset("myfiles/", "*")
+  bucket   = aws_s3_bucket.dz-tf-my-bucket.id
+  key      = each.value
+  source   = "myfiles/${each.value}"
+  etag     = filemd5("myfiles/${each.value}")
 }
+
+resource "aws_instance" ""
