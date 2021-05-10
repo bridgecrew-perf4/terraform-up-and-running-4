@@ -1,6 +1,17 @@
 provider "aws" {
   profile = "tf_dev"
-  region = "us-east-2"
+  region  = "us-east-2"
+}
+
+terraform {
+  backend "s3" {
+    bucket         = "dz-terraform-state"
+    key            = "global/s3/terraform.tfstate"
+    region         = "us-east-2"
+    profile        = "tf_dev"
+    dynamodb_table = "terraform-up-and-running-locks"
+    encrypt        = true
+  }
 
 }
 
