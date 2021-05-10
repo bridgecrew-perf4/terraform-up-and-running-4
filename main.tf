@@ -1,5 +1,7 @@
 provider "aws" {
+  profile = "tf_dev"
   region = "us-east-2"
+
 }
 
 data "aws_vpc" "default" {
