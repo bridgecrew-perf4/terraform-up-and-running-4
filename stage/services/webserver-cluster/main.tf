@@ -8,7 +8,7 @@ terraform {
     region  = "us-east-2"
     profile = "tf_dev"
     bucket  = "dz-terraform-state"
-    key     = "global/s3/terraform.tfstate"
+    key     = "stage/services/webserver-cluster/terraform.tfstate"
 
 
     dynamodb_table = "dz-terraform-up-and-running-locks"
@@ -17,12 +17,34 @@ terraform {
 
 }
 
+data "terraform_remote_state" "db" {
+  backend = "s3"
+
+  config = {
+    bucket  = "dz-terraform-state"
+    key     = "stage/data-stores/mysql/terraform.tfstate"
+    region  = "us-east-2"
+    profile = "tf_dev"
+  }
+}
+
 data "aws_vpc" "default" {
   default = true
 }
 
 data "aws_subnet_ids" "default" {
   vpc_id = data.aws_vpc.default.id
+}
+
+data "template_file" "user_data" {
+  template = "/user_data.sh"
+
+  vars = {
+    server_port = var.server_port
+    db_address  = data.terraform_remote_state.db.outputs.address
+    db_port     = data.terraform_remote_state.db.outputs.port
+
+  }
 }
 
 resource "aws_security_group" "instance" {
@@ -60,11 +82,7 @@ resource "aws_launch_configuration" "example" {
   instance_type   = "t2.micro"
   security_groups = [aws_security_group.instance.id]
 
-  user_data = <<-EOF
-                #!/bin/bash
-                echo "Hello, World" > index.html
-                nohup busybox httpd -f -p 8080 &
-                EOF
+  user_data = data.template_file.user_data.rendered
 
   # Required when using a launch configuration with an auto scaling group.
   # https://www.terraform.io/docs/providers/aws/r/launch_configuration.html

@@ -1,5 +1,6 @@
 provider "aws" {
-    region = "us-east-2"
+  region  = "us-east-2"
+  profile = "tf_dev"
 }
 
 terraform {
@@ -7,7 +8,7 @@ terraform {
     region  = "us-east-2"
     profile = "tf_dev"
     bucket  = "dz-terraform-state"
-    key     = "global/s3/terraform.tfstate"
+    key     = "stage/data-stores/mysql/terraform.tfstate"
 
 
     dynamodb_table = "dz-terraform-up-and-running-locks"
@@ -17,17 +18,13 @@ terraform {
 }
 
 resource "aws_db_instance" "example" {
-    identifier_prefix = "terraform-up-and-running"
-    engine = "mysql"
-    allocated_storage = 10
-    instance_class = "db.t2.micro"
-    name = "example_database"
-    username = "admin"
+  identifier_prefix = "terraform-up-and-running"
+  engine            = "mysql"
+  allocated_storage = 10
+  instance_class    = "db.t2.micro"
+  name              = "example_database"
+  username          = "admin"
 
-    password = 
-        data.aws_secretsmanager_secret_version.db_password.secret_string
+  password = var.db_password
 }
 
-data "aws_secretsmanager_secret_version" "db_password" {
-    secret_id = "mysql-master-password-stage"
-}
