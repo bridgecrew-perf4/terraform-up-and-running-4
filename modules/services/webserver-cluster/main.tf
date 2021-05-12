@@ -3,7 +3,7 @@ terraform {
     region  = "us-east-2"
     profile = "tf_dev"
     bucket  = "dz-terraform-state"
-    key     = "stage/services/webserver-cluster/terraform.tfstate"
+    key     = "${var.environment}/services/webserver-cluster/terraform.tfstate"
 
 
     dynamodb_table = "dz-terraform-up-and-running-locks"
@@ -16,8 +16,8 @@ data "terraform_remote_state" "db" {
   backend = "s3"
 
   config = {
-    bucket  = "dz-terraform-state"
-    key     = "stage/data-stores/mysql/terraform.tfstate"
+    bucket  = var.db-remote-state-bucket
+    key     = var.db-remote-state-key
     region  = "us-east-2"
     profile = "tf_dev"
   }
@@ -43,7 +43,7 @@ data "template_file" "user_data" {
 }
 
 resource "aws_security_group" "instance" {
-  name = "terraform-instance-example"
+  name = "${var.cluster-name}-instance"
 
   ingress {
     from_port   = 8080
@@ -54,7 +54,7 @@ resource "aws_security_group" "instance" {
 }
 
 resource "aws_security_group" "alb" {
-  name = "terraform-example-alb"
+  name = "${var.cluster-name}-alb"
 
   # Allow inbound HTTP requests
   ingress {
@@ -98,13 +98,13 @@ resource "aws_autoscaling_group" "example" {
 
   tag {
     key                 = "Name"
-    value               = "terraform-asg-example"
+    value               = "${var.cluster-name}-asg"
     propagate_at_launch = true
   }
 }
 
 resource "aws_lb" "example" {
-  name               = "terraform-asg-example"
+  name               = "${var.cluster-name}-alb"
   load_balancer_type = "application"
   subnets            = data.aws_subnet_ids.default.ids
   security_groups    = [aws_security_group.alb.id]
