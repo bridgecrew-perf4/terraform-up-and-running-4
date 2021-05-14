@@ -1,17 +1,3 @@
-terraform {
-  backend "s3" {
-    region  = "us-east-2"
-    profile = "tf_dev"
-    bucket  = "dz-terraform-state"
-    key     = "${var.environment}/services/webserver-cluster/terraform.tfstate"
-
-
-    dynamodb_table = "dz-terraform-up-and-running-locks"
-    encrypt        = true
-  }
-
-}
-
 data "terraform_remote_state" "db" {
   backend = "s3"
 

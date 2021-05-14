@@ -3,20 +3,6 @@ provider "aws" {
   profile = "tf_dev"
 }
 
-terraform {
-  backend "s3" {
-    region  = "us-east-2"
-    profile = "tf_dev"
-    bucket  = "dz-terraform-state"
-    key     = "stage/data-stores/mysql/terraform.tfstate"
-
-
-    dynamodb_table = "dz-terraform-up-and-running-locks"
-    encrypt        = true
-  }
-
-}
-
 resource "aws_db_instance" "example" {
   identifier_prefix = "terraform-up-and-running"
   engine            = "mysql"
@@ -26,5 +12,18 @@ resource "aws_db_instance" "example" {
   username          = "admin"
 
   password = var.db_password
+}
+
+terraform {
+  backend "s3" {
+    bucket  = "dz-terraform-state"
+    key     = "stage/data-stores/mysql/terraform.tfstate"
+    region  = "us-east-2"
+    profile = "tf_dev"
+
+    dynamodb_table = "dz-terraform-up-and-running-locks"
+    encrypt        = true
+  }
+
 }
 

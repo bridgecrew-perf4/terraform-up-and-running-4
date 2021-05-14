@@ -18,8 +18,3 @@ variable "db-remote-state-key" {
   description = "The path for the database's remote state in S3"
   type = string
 }
-
-variable "enviro" {
-  description = "Stage, Dev, Prod target environment"
-  type = string
-}

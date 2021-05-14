@@ -8,6 +8,6 @@ module "webserver-cluster" {
 
   cluster-name           = "webserver-prod"
   db-remote-state-bucket = "dz-terraform-state"
-  db-remote-state-key    = "${var.enviro}/data-stores/mysql/terraform.tfstate"
-  enviro            = "prod"
+  db-remote-state-key    = "prod/data-stores/mysql/terraform.tfstate"
+
 }
